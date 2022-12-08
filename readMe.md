@@ -1,2 +1,2 @@
-## QMIND 2022 
+## QMIND 2022 Arbitrage Bot
 # mev team 
