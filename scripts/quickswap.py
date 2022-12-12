@@ -57,21 +57,38 @@ def generate_get_reserves_json_rpc(pairs, blockNumber='latest'):
                     ]
                 )
 
-# format the http request and pull the data out of it
-def generate_polygon_pairs( blockNumber='latest'):
-    # get latest polygon block number
-    blockNumber = hex(w3.eth.blockNumber)
-    d = w3.eth.contract(abi=qsPairABI) 
 
-    return generate_json_rpc(
-            method='eth_call',
-            params=[{
-                'to': qs_addy,
-                'data': d.encodeABI(fn_name='allPairsLength', args=[]),
-                },
-                blockNumber ,
-                ]
-            )
+d = w3.eth.contract(abi=qsPairABI, address=qs_addy)
+
+
+# format the http request and pull the data out of it
+def generate_polygon_pairs(blockNumber='latest'):
+    pairs = list()
+    d = w3.eth.contract(abi=qsPairABI, address=qs_addy)
+    total_length_pairs = d.functions.allPairsLength().call()
+    print(total_length_pairs)
+
+    TRIAL_LENGTH =  total_length_pairs - 40738 # roughly 50
+
+    for i in range(TRIAL_LENGTH):
+        # want reserves amount for each pair in the pairs in factory
+        pool_i = d.functions.allPairs(i).call()
+
+        c1 = w3.eth.contract(abi=pairABI, address=pool_i)
+
+        #data = c1.functions.getReserves().call()
+
+        pairs.append(pool_i)
+
+        yield generate_json_rpc(
+                method='eth_call',
+                params=[{
+                    'to': pool_i,
+                    'data': c1.encodeABI(fn_name='getReserves', args=[]),
+                    },
+                    blockNumber ,
+                    ]
+                )
 
 # pull the result for each response
 def rpc_response_to_result(response):
@@ -93,14 +110,12 @@ def rpc_response_batch_to_results(response):
 
 #r = list(generate_get_reserves_json_rpc([pairs[0]])
 q = list(generate_polygon_pairs())
-
+# PROCESS THE FIRST 10 RESULTS
 batch_provider = BatchHTTPProvider(endpoint_uri=POLYGON_RPC)
 resp = batch_provider.make_batch_request(json.dumps(q))
 results = list(rpc_response_batch_to_results(resp))
 
-print(results)
-
-
+# display the first one at index 0
 res = decode_abi(['uint256', 'uint256', 'uint256'], bytes.fromhex(results[0][2:]))
 
 print('reserve0 amount', res[0])
