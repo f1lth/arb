@@ -1,4 +1,3 @@
-from uniswap import Uniswap
 from web3 import Web3
 from eth_abi import decode_abi
 from web3._utils.request import make_post_request
