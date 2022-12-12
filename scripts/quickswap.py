@@ -76,11 +76,12 @@ def generate_get_reserves_json_rpc(pairs, blockNumber='latest'):
 
 
 # format the http request and pull the data out of it
-def gen_polygon_pool_addresses():
+def gen_polygon_pairs():
     
     pairs = list()
     # read from the quickswap contract on the polygon chain
     qswap_contract = w3.eth.contract(abi=qsPairABI, address=qs_addy)
+    
     TOTAL_LENGTH = qswap_contract.functions.allPairsLength().call()
     TEST_LENGTH = 10
 
@@ -89,25 +90,24 @@ def gen_polygon_pool_addresses():
             print(f'generating...({i} / {TOTAL_LENGTH})')
     
         pool_i = qswap_contract.functions.allPairs(i).call()
+
+        univ2pair = w3.eth.contract(abi=pairABI, address=pool_i)
+        address0 = univ2pair.functions.token0().call()
+        address1 = univ2pair.functions.token1().call()
         
-        token_contract = w3.eth.contract(abi=erc20ABI, address=pool_i)
-        address0 = token_contract.functions.name().call()
-        print(address0)
-        asdf
         token0contract = w3.eth.contract(abi=erc20ABI, address=address0)
         token0 = {'token0': {
             'address': address0,
-            'symbol': token0contract.caller().symbol,
-            'decimal': token0contract.caller().decimal
+            'symbol': token0contract.functions.symbol().call(),
+            'decimal': token0contract.functions.decimals().call()
         }}
 
-        address1 = d.functions.token1().call()
-        token1contract = w3.eth.contract(abi=erc20ABI, address=address1)
 
+        token1contract = w3.eth.contract(abi=erc20ABI, address=address1)
         token1 = {'token1': {
             'address': address1,
-            'symbol': token1contract.caller().symbol,
-            'decimal': token1contract.caller().decimal
+            'symbol': token1contract.functions.symbol().call(),
+            'decimal': token0contract.functions.decimals().call(),
         }}
 
         out = {
@@ -118,15 +118,16 @@ def gen_polygon_pool_addresses():
 
         }
 
+
         #[{ "index": 0, 
-        #   "address": "0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc", 
+        #   "address": "0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc",              # pool i 
         #   "token0": {
-        #       "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", 
+        #       "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",          # address0
         #       "symbol": "USDC", 
         #       "decimal": 6
         #       }, 
         #   "token1": {
-        #       "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", 
+        #       "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",          # address0
         #       "symbol": "WETH", 
         #       "decimal": 18
         #       }, 
@@ -139,19 +140,19 @@ def gen_polygon_pool_addresses():
     return pairs
 
 # format the http request and pull the data out of it
-def generate_polygon_pairs(pairs, blockNumber='latest'):
+def get_polygon_reserves(pairs, blockNumber='latest'):
     
     # loop through the list of pairs
     for pair in pairs:
 
-        c1 = w3.eth.contract(abi=pairABI, address=pair)
+        c1 = w3.eth.contract(abi=pairABI, address=pair['address'])
 
         #data = c1.functions.getReserves().call()
 
         yield generate_json_rpc(
                 method='eth_call',
                 params=[{
-                    'to': pair,
+                    'to': pair['address'],
                     'data': c1.encodeABI(fn_name='getReserves', args=[]),
                     },
                     blockNumber,
@@ -179,15 +180,11 @@ def rpc_response_batch_to_results(response):
 
 
 
-q = gen_polygon_pool_addresses()
-
-print(q)
-
+pairs = gen_polygon_pairs()
+print(pairs)
 input()
 
-asdfasdf
-#r = list(generate_get_reserves_json_rpc([pairs[0]])
-q = list(generate_polygon_pairs())
+q = list(get_polygon_reserves(pairs))
 
 # PROCESS THE FIRST 10 RESULTS
 batch_provider = BatchHTTPProvider(endpoint_uri=POLYGON_RPC)
@@ -199,7 +196,6 @@ for i in range(10):
     # display the first one at index 0
     res = decode_abi(['uint256', 'uint256', 'uint256'], bytes.fromhex(results[i][2:]))
     reserves.append((res[0], res[1]))
-
 
 print(reserves)
 
