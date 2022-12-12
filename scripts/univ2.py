@@ -5,6 +5,22 @@ from web3._utils.request import make_post_request
 from web3 import HTTPProvider
 import json
 
+'''
+                        $$\                 $$\    
+                        \__|                $$ |   
+ $$$$$$\  $$$$$$\$$$$\  $$\ $$$$$$$\   $$$$$$$ |   
+$$  __$$\ $$  _$$  _$$\ $$ |$$  __$$\ $$  __$$ |   
+$$ /  $$ |$$ / $$ / $$ |$$ |$$ |  $$ |$$ /  $$ |   
+$$ |  $$ |$$ | $$ | $$ |$$ |$$ |  $$ |$$ |  $$ |   
+\$$$$$$$ |$$ | $$ | $$ |$$ |$$ |  $$ |\$$$$$$$ |   
+ \____$$ |\__| \__| \__|\__|\__|  \__| \_______|   
+      $$ |                                         
+      $$ |         2022  -  2023  season                               
+      \__|         DISRUPTIVE TECHNOLOGY 
+                   FILE: univ2.py
+                   PURPOSE: pull reserve feeds from uniswapv2 mainnet chain
+'''
+
 pairABI = json.load(open('../abi/IUniswapV2Pair.json'))['abi']
 pairs = json.load(open('../files/pairs.json'))
 
@@ -75,10 +91,9 @@ def rpc_response_batch_to_results(response):
     for response_item in response:
         yield rpc_response_to_result(response_item)
 
-
 # setup and make the call itself
-# 1) format the jsons for the batch call ( we're only doing 1 rn)
-r = list(generate_get_reserves_json_rpc([pairs[0]]))
+# 1) format the jsons for the batch call ( we're only doing 10 rn)
+r = list(generate_get_reserves_json_rpc(pairs[:10]))
 
 # 2) make the batch call
 # // notice, here we call the address of the pool, 
@@ -88,14 +103,19 @@ batch_provider = BatchHTTPProvider(endpoint_uri=MAINNET_RPC)
 resp = batch_provider.make_batch_request(json.dumps(r))
 results = list(rpc_response_batch_to_results(resp))
 
-# 4) decode the data (it's in hex)
-# we access index 0 because normally this would a for loop for all pairs
-res = decode_abi(['uint256', 'uint256', 'uint256'], bytes.fromhex(results[0][2:]))
+reserves = list()
+for i in range(10):
 
-print('reserve0 amount', res[0])
-print('reserve1 amount', res[1])
+    # 4) decode the data (it's in hex)
+    # we access index 0 because normally this would a for loop for all pairs
+    res = decode_abi(['uint256', 'uint256', 'uint256'], bytes.fromhex(results[i][2:]))
 
+    print('reserve0 amount', res[0])
+    print('reserve1 amount', res[1])
 
+    reserves.append((res[0], res[1]))
+
+print(reserves)
 
 
 

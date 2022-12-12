@@ -5,6 +5,22 @@ from web3._utils.request import make_post_request
 from web3 import HTTPProvider
 import json
 
+'''
+                        $$\                 $$\    
+                        \__|                $$ |   
+ $$$$$$\  $$$$$$\$$$$\  $$\ $$$$$$$\   $$$$$$$ |   
+$$  __$$\ $$  _$$  _$$\ $$ |$$  __$$\ $$  __$$ |   
+$$ /  $$ |$$ / $$ / $$ |$$ |$$ |  $$ |$$ /  $$ |   
+$$ |  $$ |$$ | $$ | $$ |$$ |$$ |  $$ |$$ |  $$ |   
+\$$$$$$$ |$$ | $$ | $$ |$$ |$$ |  $$ |\$$$$$$$ |   
+ \____$$ |\__| \__| \__|\__|\__|  \__| \_______|   
+      $$ |                                         
+      $$ |         2022  -  2023  season                               
+      \__|         DISRUPTIVE TECHNOLOGY 
+                   FILE: quickswap.py
+                   PURPOSE: pull reserve feeds from polygon l2 chain
+'''
+
 pairABI = json.load(open('../abi/IUniswapV2Pair.json'))['abi']
 qsPairABI = json.load(open('../abi/IUniswapQSPair.json'))['abi']
 pairs = json.load(open('../files/pairs.json'))
@@ -58,9 +74,6 @@ def generate_get_reserves_json_rpc(pairs, blockNumber='latest'):
                 )
 
 
-d = w3.eth.contract(abi=qsPairABI, address=qs_addy)
-
-
 # format the http request and pull the data out of it
 def generate_polygon_pairs(blockNumber='latest'):
     pairs = list()
@@ -110,17 +123,20 @@ def rpc_response_batch_to_results(response):
 
 #r = list(generate_get_reserves_json_rpc([pairs[0]])
 q = list(generate_polygon_pairs())
+
 # PROCESS THE FIRST 10 RESULTS
 batch_provider = BatchHTTPProvider(endpoint_uri=POLYGON_RPC)
 resp = batch_provider.make_batch_request(json.dumps(q))
 results = list(rpc_response_batch_to_results(resp))
 
-# display the first one at index 0
-res = decode_abi(['uint256', 'uint256', 'uint256'], bytes.fromhex(results[0][2:]))
+reserves = list()
+for i in range(10):
+    # display the first one at index 0
+    res = decode_abi(['uint256', 'uint256', 'uint256'], bytes.fromhex(results[i][2:]))
+    reserves.append((res[0], res[1]))
 
-print('reserve0 amount', res[0])
-print('reserve1 amount', res[1])
 
+print(reserves)
 
 
 
