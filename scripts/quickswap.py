@@ -79,14 +79,15 @@ def generate_get_reserves_json_rpc(pairs, blockNumber='latest'):
 def gen_polygon_pairs():
     
     pairs = list()
+    tokens = set()
     # read from the quickswap contract on the polygon chain
     qswap_contract = w3.eth.contract(abi=qsPairABI, address=qs_addy)
     
     TOTAL_LENGTH = qswap_contract.functions.allPairsLength().call()
     TEST_LENGTH = 10
 
-    for i in range(TEST_LENGTH):
-        if i % 100 == 0:
+    for i in range(100):
+        if i % 10 == 0:
             print(f'generating...({i} / {TOTAL_LENGTH})')
     
         pool_i = qswap_contract.functions.allPairs(i).call()
@@ -94,6 +95,9 @@ def gen_polygon_pairs():
         univ2pair = w3.eth.contract(abi=pairABI, address=pool_i)
         address0 = univ2pair.functions.token0().call()
         address1 = univ2pair.functions.token1().call()
+
+        # add the addresses to the set if they're not in there already
+        
         
         token0contract = w3.eth.contract(abi=erc20ABI, address=address0)
         token0 = {'token0': {
@@ -102,13 +106,17 @@ def gen_polygon_pairs():
             'decimal': token0contract.functions.decimals().call()
         }}
 
-
         token1contract = w3.eth.contract(abi=erc20ABI, address=address1)
         token1 = {'token1': {
             'address': address1,
             'symbol': token1contract.functions.symbol().call(),
             'decimal': token0contract.functions.decimals().call(),
         }}
+
+        if address0 not in tokens:
+            tokens.add(address0)
+        if address1 not in tokens:
+            tokens.add(address1)
 
         out = {
             'index': i,
@@ -117,7 +125,6 @@ def gen_polygon_pairs():
             'token1': token1
 
         }
-
 
         #[{ "index": 0, 
         #   "address": "0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc",              # pool i 
@@ -137,7 +144,7 @@ def gen_polygon_pairs():
 
         pairs.append(out)
 
-    return pairs
+    return pairs, tokens
 
 # format the http request and pull the data out of it
 def get_polygon_reserves(pairs, blockNumber='latest'):
@@ -184,8 +191,17 @@ pairs = gen_polygon_pairs()
 print(pairs)
 input()
 
-q = list(get_polygon_reserves(pairs))
+pairs, tokens = list(get_polygon_reserves(pairs))
 
+# save q as a json file
+with open('polygon_pairs.json', 'w') as f:
+    json.dump(pairs, f)
+
+# after generating the json, we can sort the pairs by relevancy
+print('a set containing all unique tokens', tokens)
+
+
+'''
 # PROCESS THE FIRST 10 RESULTS
 batch_provider = BatchHTTPProvider(endpoint_uri=POLYGON_RPC)
 resp = batch_provider.make_batch_request(json.dumps(q))
@@ -198,7 +214,7 @@ for i in range(10):
     reserves.append((res[0], res[1]))
 
 print(reserves)
-
+'''
 
 
 
