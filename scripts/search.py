@@ -1,4 +1,3 @@
-# import somethings from somewhere
 
 '''
                         $$\                 $$\    
@@ -15,7 +14,6 @@ $$ |  $$ |$$ | $$ | $$ |$$ |$$ |  $$ |$$ |  $$ |
                    FILE: search.py
                    PURPOSE: methods to search for arbitrage opportunities
 '''
-
 
 class Search:
 

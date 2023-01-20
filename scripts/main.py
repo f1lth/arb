@@ -22,7 +22,6 @@ pairs = json.load(open('../files/polygon_pairs.json'))
 pairDict = toDict(pairs)
 
 tokenIn = ['USDC', 'DAI', "USDT","FRAX", "WETH", "ETH"]
-tokenIn = ['USDC', 'DAI', "USDT","FRAX", "WETH", "ETH"]
 
 currentPairs = list()
 bestTrades = list()
