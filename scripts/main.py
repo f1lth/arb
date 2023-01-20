@@ -1,6 +1,7 @@
 import json
 import time
 from quickswap import *
+from utils import *
 
 '''
                         $$\                 $$\    
@@ -31,23 +32,26 @@ path = [tokenIn]
 
 def main():
     global pairs, pairsDict # prolly some more...
-    start = int(time.time())
+    start = time.time()
     
     # 1) select relevant pairs
 
-    # @@@ !!!! Plzzz someone figure this out :)))
-    # @@@ 1!!! i want to sort our pairs by liquidity or volume kthx
 
     # 2) get reserves for each pair
     try:
         reserves = get_reserves(pairs)
+        end = time.time()
+        delta = "{:.3f}".format(end - start)
+        bot_print(f"Time to get reserves {delta}s", 'INFO')
     except Exception as e:
-        print("error getting reserves", e)
+        bot_print(f"error: {e}", 'FAIL')
         return
-    end = int(time.time())
+    
 
-    print("time to get reserves", end - start)
-    print(reserves)
+    # format time to 3 decimal places
+
+    input()
+
     # 3) find arb with A *
 
     # 4) pop the head to see the best trade
@@ -55,4 +59,10 @@ def main():
     # 5) if trade > min profit , executre
 
 
-main()
+if __name__ == "__main__":
+    while True:
+        try:
+            main()
+        except Exception as e:
+            print("error in main", e)
+
