@@ -19,9 +19,11 @@ $$ |  $$ |$$ | $$ | $$ |$$ |$$ |  $$ |$$ |  $$ |
 
 class Search:
 
-    # searhch psudocode:
+    # search psudocode:
     #
-    # loop through pairs
+    # tokenIn = start token
+    #
+    # loop: pair_i -> pair_N
     #   if (token0 or token1 is tokenIn) skip pair
     #   if (reserve0 or reserve1 is less than 1)  skip pair
     #
@@ -43,7 +45,8 @@ class Search:
     #             pairsExcludingThisPair = pairs[:i] + pairs[i+1:]
     #             keep searching for more trades
     #
-    #     return bestTrades
+    #     return best trades
+    #  end loop
 
     @staticmethod
     def dfs(pairs, tokenIn, tokenOut, maxHops, currentPairs, path, bestTrades, count=5):
