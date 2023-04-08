@@ -31,7 +31,8 @@ $$ |  $$ |$$ | $$ | $$ |$$ |$$ |  $$ |$$ |  $$ |
 pairABI = json.load(open('../abi/IUniswapV2Pair.json'))['abi']
 qsPairABI = json.load(open('../abi/IUniswapQSPair.json'))['abi']
 
-POLYGON_RPC = "https://polygon-mainnet.g.alchemy.com/v2/CgqAh4Ifjhpq7TBIzigvS1-x9gqfAqCI"
+MAINNET_RPC = PROCESS.ENV.MAINNET_RPC
+POLYGON_RPC = PROCESS.ENV.POLYGON_RPC
 w3 = Web3(Web3.HTTPProvider(POLYGON_RPC))
 
 pairs = json.load(open('../files/pairs.json'))

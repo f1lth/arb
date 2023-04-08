@@ -4,6 +4,7 @@ from web3._utils.request import make_post_request
 from web3 import HTTPProvider
 import json
 import numpy as np
+from dotenv import load_dotenv
 
 '''
                         $$\                 $$\    
@@ -26,8 +27,8 @@ qsPairABI = json.load(open('../abi/IUniswapQSPair.json'))['abi']
 erc20ABI = json.load(open('../abi/ERC20.json'))['abi']
 pairs = json.load(open('../files/pairs.json'))
 
-MAINNET_RPC = 'https://eth-mainnet.g.alchemy.com/v2/_6fKb6sxb6cRqisT68ysJiX759z1J0a-'
-POLYGON_RPC = "https://polygon-mainnet.g.alchemy.com/v2/CgqAh4Ifjhpq7TBIzigvS1-x9gqfAqCI"
+MAINNET_RPC = PROCESS.ENV.MAINNET_RPC
+POLYGON_RPC = PROCESS.ENV.POLYGON_RPC
 QUICKSWAP_CONTRACT = '0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32'
 
 w3 = Web3(Web3.HTTPProvider(POLYGON_RPC))
